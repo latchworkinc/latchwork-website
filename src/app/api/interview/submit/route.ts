@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { interviewSchema } from "@/lib/validation/interview-schema";
+import { submitInterview } from "@/app/actions/staticforms";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -24,7 +25,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // TODO: persist result.data to the database and/or email the hiring team.
+  const submission = await submitInterview(result.data);
+
+  if (!submission.success) {
+    return NextResponse.json(
+      { success: false, error: submission.error },
+      { status: 502 }
+    );
+  }
 
   return NextResponse.json({ success: true });
 }

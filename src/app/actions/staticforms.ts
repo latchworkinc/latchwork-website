@@ -1,5 +1,11 @@
 "use server";
 
+import {
+  INTERVIEW_QUESTIONS,
+  US_STATES,
+  type InterviewFormValues,
+} from "@/lib/validation/interview-schema";
+
 const STATICFORMS_ENDPOINT = "https://api.staticforms.dev/submit";
 
 type SubmitResult = { success: true } | { success: false; error: string };
@@ -100,5 +106,33 @@ export async function submitApplication(
     subject: `New job application: ${role || "General application"}`,
     message: lines.join("\n"),
     replyTo: email,
+  });
+}
+
+export async function submitInterview(
+  data: InterviewFormValues
+): Promise<SubmitResult> {
+  const stateLabel =
+    US_STATES.find((state) => state.value === data.state)?.label ?? data.state;
+
+  const header = [
+    `Name: ${data.fullName}`,
+    `Email: ${data.email}`,
+    `Phone: ${data.phone}`,
+    `Location: ${data.city}, ${stateLabel}`,
+    `Authorized to work in the US: ${data.workAuthorized === "yes" ? "Yes" : "No"}`,
+  ].join("\n");
+
+  const answers = INTERVIEW_QUESTIONS.map((question, index) => {
+    const answer = data[question.id as keyof InterviewFormValues] as string;
+    return `${index + 1}. ${question.label}\n${answer || "(no answer)"}`;
+  }).join("\n\n");
+
+  return submitToStaticForms({
+    name: data.fullName,
+    email: data.email,
+    subject: `New interview submission: ${data.fullName}`,
+    message: [header, answers].join("\n\n"),
+    replyTo: data.email,
   });
 }
