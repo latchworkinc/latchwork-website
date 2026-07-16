@@ -37,18 +37,24 @@ export default function ApplicantInfoSection() {
           <Input type="text" placeholder="Chicago" {...register("city")} />
         </FormField>
 
-        <FormField label="Current State" required error={errors.state?.message}>
-          <Select defaultValue="" {...register("state")}>
-            <option value="" disabled>
-              Select a state
-            </option>
-            {US_STATES.map((state) => (
-              <option key={state.value} value={state.value}>
-                {state.label}
-              </option>
-            ))}
-          </Select>
-        </FormField>
+        <Controller
+          name="state"
+          control={control}
+          render={({ field }) => (
+            <FormField label="Current State" required error={errors.state?.message}>
+              <Select
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder="Select a state"
+                options={US_STATES.map((state) => ({
+                  value: state.value,
+                  label: state.label,
+                }))}
+              />
+            </FormField>
+          )}
+        />
 
         <div className="sm:col-span-2">
           <Controller
