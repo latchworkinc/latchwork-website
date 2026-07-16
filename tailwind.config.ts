@@ -37,6 +37,12 @@ const config: Config = {
           300: "#a9b7b1",
           400: "#7c8b85",
         },
+        interview: {
+          bg: "#05050A",
+          card: "#0F0F1C",
+          accent: "#6C63FF",
+          "accent-light": "#8B84FF",
+        },
       },
       fontFamily: {
         display: ["var(--font-display)", "serif"],
@@ -52,6 +58,8 @@ const config: Config = {
       boxShadow: {
         glow: "0 0 40px rgba(18,168,102,0.2)",
         card: "0 4px 24px rgba(0,0,0,0.4)",
+        "interview-card": "0 8px 40px rgba(0,0,0,0.55)",
+        "interview-glow": "0 0 40px rgba(108,99,255,0.25)",
       },
       keyframes: {
         marquee: {
