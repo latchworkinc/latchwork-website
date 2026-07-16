@@ -10,14 +10,16 @@ const STATICFORMS_ENDPOINT = "https://api.staticforms.dev/submit";
 
 type SubmitResult = { success: true } | { success: false; error: string };
 
-async function submitToStaticForms(payload: {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  replyTo?: string;
-}): Promise<SubmitResult> {
-  const apiKey = process.env.STATICFORMS_ACCESS_KEY;
+async function submitToStaticForms(
+  payload: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    replyTo?: string;
+  },
+  apiKey = process.env.STATICFORMS_ACCESS_KEY
+): Promise<SubmitResult> {
   if (!apiKey) {
     return { success: false, error: "Form submission isn't configured yet." };
   }
@@ -128,11 +130,14 @@ export async function submitInterview(
     return `${index + 1}. ${question.label}\n${answer || "(no answer)"}`;
   }).join("\n\n");
 
-  return submitToStaticForms({
-    name: data.fullName,
-    email: data.email,
-    subject: `New interview submission: ${data.fullName}`,
-    message: [header, answers].join("\n\n"),
-    replyTo: data.email,
-  });
+  return submitToStaticForms(
+    {
+      name: data.fullName,
+      email: data.email,
+      subject: `New interview submission: ${data.fullName}`,
+      message: [header, answers].join("\n\n"),
+      replyTo: data.email,
+    },
+    process.env.STATICFORMS_INTERVIEW_ACCESS_KEY
+  );
 }
