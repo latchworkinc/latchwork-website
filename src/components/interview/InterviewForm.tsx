@@ -30,6 +30,7 @@ const defaultValues: InterviewFormValues = {
   phone: "",
   city: "",
   state: "" as InterviewFormValues["state"],
+  resumeUrl: "",
   workAuthorized: undefined as unknown as InterviewFormValues["workAuthorized"],
   certified: false,
   ...questionDefaults,

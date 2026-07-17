@@ -122,8 +122,11 @@ export async function submitInterview(
     `Email: ${data.email}`,
     `Phone: ${data.phone}`,
     `Location: ${data.city}, ${stateLabel}`,
+    data.resumeUrl && `Resume: ${data.resumeUrl}`,
     `Authorized to work in the US: ${data.workAuthorized === "yes" ? "Yes" : "No"}`,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const answers = INTERVIEW_QUESTIONS.map((question, index) => {
     const answer = data[question.id as keyof InterviewFormValues] as string;

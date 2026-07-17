@@ -57,6 +57,16 @@ export default function ApplicantInfoSection() {
         />
 
         <div className="sm:col-span-2">
+          <FormField label="Resume Link" error={errors.resumeUrl?.message}>
+            <Input
+              type="url"
+              placeholder="https://link-to-your-resume.com"
+              {...register("resumeUrl")}
+            />
+          </FormField>
+        </div>
+
+        <div className="sm:col-span-2">
           <Controller
             name="workAuthorized"
             control={control}

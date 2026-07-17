@@ -68,6 +68,12 @@ export const applicantInfoSchema = z.object({
   state: z.enum(US_STATE_VALUES, {
     error: () => "Please select your state.",
   }),
+  resumeUrl: z
+    .string()
+    .trim()
+    .url("Enter a valid URL, starting with http:// or https://.")
+    .optional()
+    .or(z.literal("")),
   workAuthorized: z.enum(["yes", "no"], {
     error: () => "Please select an option.",
   }),
