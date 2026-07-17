@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Contact",
-  "Book a free operational audit or reach out to Latchwork Inc. Chicago-based, serving small businesses nationwide."
+  "Book a free operational audit or reach out to Latchwork Consulting. Chicago-based, serving small businesses nationwide."
 );
 
 const infoItems = [

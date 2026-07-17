@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Apply",
-  "Apply for an open role at Latchwork Inc — operations, financial ops, automation, and client-facing positions."
+  "Apply for an open role at Latchwork Consulting — operations, financial ops, automation, and client-facing positions."
 );
 
 export default function ApplyPage() {

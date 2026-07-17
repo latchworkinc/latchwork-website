@@ -54,7 +54,7 @@ export default function Footer() {
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-charcoal-700/60 pt-8 text-xs text-ink-400 md:flex-row">
           <p>
-            © {new Date().getFullYear()} Latchwork Inc. All rights reserved.
+            © {new Date().getFullYear()} Latchwork Consulting. All rights reserved.
           </p>
           <p>Business operations & back-office efficiency consulting.</p>
         </div>

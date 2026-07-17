@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Pricing",
-  "Latchwork Inc pricing — audit-only engagements, audit plus implementation, or a full ongoing operations partnership."
+  "Latchwork Consulting pricing — audit-only engagements, audit plus implementation, or a full ongoing operations partnership."
 );
 
 export default function PricingPage() {

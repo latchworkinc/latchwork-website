@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "About",
-  "Latchwork Inc was founded to fix the operational debt that quietly drags down small businesses."
+  "Latchwork Consulting was founded to fix the operational debt that quietly drags down small businesses."
 );
 
 export default function AboutPage() {

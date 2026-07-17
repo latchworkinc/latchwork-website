@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Who We Are",
-  "Meet the consultants behind Latchwork Inc — operators who've run real back offices, not generalist consultants."
+  "Meet the consultants behind Latchwork Consulting — operators who've run real back offices, not generalist consultants."
 );
 
 const [founder, ...rest] = team;

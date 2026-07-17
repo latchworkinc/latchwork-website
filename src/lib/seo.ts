@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
-const SITE_NAME = "Latchwork Inc";
+const SITE_NAME = "Latchwork Consulting";
 
 const OG_IMAGE = {
   url: "/opengraph-image.png",
   width: 1200,
   height: 630,
-  alt: "Latchwork Inc — Business Operations & Back-Office Efficiency Consulting",
+  alt: "Latchwork Consulting — Business Operations & Back-Office Efficiency Consulting",
 };
 
 export function pageMetadata(title: string, description: string): Metadata {

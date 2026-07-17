@@ -15,7 +15,7 @@ export default function CertificationSection() {
     <Card>
       <Checkbox
         id="certified"
-        label="I certify that the information I have provided is accurate and complete to the best of my knowledge. I understand that completing this interview does not guarantee employment with Latchwork Inc."
+        label="I certify that the information I have provided is accurate and complete to the best of my knowledge. I understand that completing this interview does not guarantee employment with Latchwork Consulting."
         error={errors.certified?.message}
         {...register("certified")}
       />

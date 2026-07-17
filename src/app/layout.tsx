@@ -28,31 +28,31 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.latchworkconsulting.com"),
   title: {
-    default: "Latchwork Inc | Business Operations & Back-Office Consulting",
-    template: "%s | Latchwork Inc",
+    default: "Latchwork Consulting | Business Operations & Back-Office Consulting",
+    template: "%s | Latchwork Consulting",
   },
   description:
-    "Latchwork Inc helps small businesses fix the operational plumbing behind the scenes — bookkeeping, workflow automation, vendor management, and process design.",
+    "Latchwork Consulting helps small businesses fix the operational plumbing behind the scenes — bookkeeping, workflow automation, vendor management, and process design.",
   openGraph: {
-    title: "Latchwork Inc | Business Operations & Back-Office Consulting",
+    title: "Latchwork Consulting | Business Operations & Back-Office Consulting",
     description:
-      "Latchwork Inc helps small businesses fix the operational plumbing behind the scenes — bookkeeping, workflow automation, vendor management, and process design.",
-    siteName: "Latchwork Inc",
+      "Latchwork Consulting helps small businesses fix the operational plumbing behind the scenes — bookkeeping, workflow automation, vendor management, and process design.",
+    siteName: "Latchwork Consulting",
     type: "website",
     images: [
       {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "Latchwork Inc — Business Operations & Back-Office Efficiency Consulting",
+        alt: "Latchwork Consulting — Business Operations & Back-Office Efficiency Consulting",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Latchwork Inc | Business Operations & Back-Office Consulting",
+    title: "Latchwork Consulting | Business Operations & Back-Office Consulting",
     description:
-      "Latchwork Inc helps small businesses fix the operational plumbing behind the scenes — bookkeeping, workflow automation, vendor management, and process design.",
+      "Latchwork Consulting helps small businesses fix the operational plumbing behind the scenes — bookkeeping, workflow automation, vendor management, and process design.",
     images: ["/opengraph-image.png"],
   },
 };

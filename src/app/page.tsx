@@ -18,7 +18,7 @@ export const metadata = {
   ),
   // the root layout's title template only applies to child segments, not
   // this same-level page, so the full title has to be spelled out here
-  title: "Home | Latchwork Inc",
+  title: "Home | Latchwork Consulting",
 };
 
 const problems = [

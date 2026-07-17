@@ -18,7 +18,7 @@ export default function InterviewNotice() {
           <div>
             <h2 className="text-base font-semibold text-white">Interview Notice</h2>
             <p className="mt-2 text-sm leading-relaxed text-white/60">
-              Thank you for your interest in joining Latchwork Inc. This interview is a
+              Thank you for your interest in joining Latchwork Consulting. This interview is a
               required step in our hiring process and is designed to help us better
               understand your qualifications, experience, communication skills, and overall
               fit for the position. Please answer each question honestly and thoughtfully.

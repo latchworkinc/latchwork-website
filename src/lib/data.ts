@@ -1,8 +1,8 @@
 export const siteConfig = {
-  name: "Latchwork Inc",
+  name: "Latchwork Consulting",
   tagline: "Back-office operations, engineered for small business.",
   description:
-    "Latchwork Inc helps small businesses fix the operational plumbing behind the scenes — bookkeeping systems, workflow automation, vendor management, and process design — so owners can get back to running the business, not babysitting it.",
+    "Latchwork Consulting helps small businesses fix the operational plumbing behind the scenes — bookkeeping systems, workflow automation, vendor management, and process design — so owners can get back to running the business, not babysitting it.",
   email: "info@latchworkconsulting.com",
   phone: "+1 (312) LATCHWK",
   address: "233 S Wacker Dr, Suite 1900, Chicago, IL 60606",

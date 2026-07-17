@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Careers",
-  "Join Latchwork Inc — open roles in operations consulting, financial operations, automation, and client operations."
+  "Join Latchwork Consulting — open roles in operations consulting, financial operations, automation, and client operations."
 );
 
 export default function CareersPage() {

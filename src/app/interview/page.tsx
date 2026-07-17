@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Interview",
-  "Complete your remote administrative assistant interview for Latchwork Inc."
+  "Complete your remote administrative assistant interview for Latchwork Consulting."
 );
 
 export default function InterviewPage() {

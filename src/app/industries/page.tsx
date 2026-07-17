@@ -9,7 +9,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata(
   "Industries We Serve",
-  "Latchwork Inc works with retail, logistics, professional services, wellness, and growing small businesses — fixing the back-office systems specific to each."
+  "Latchwork Consulting works with retail, logistics, professional services, wellness, and growing small businesses — fixing the back-office systems specific to each."
 );
 
 export default function IndustriesPage() {
