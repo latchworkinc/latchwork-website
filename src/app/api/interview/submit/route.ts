@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   if (!submission.success) {
     return NextResponse.json(
       { success: false, error: submission.error },
-      { status: 502 }
+      { status: 500 }
     );
   }
 
