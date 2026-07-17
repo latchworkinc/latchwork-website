@@ -26,7 +26,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.latchworkconsulting.com"),
+  metadataBase: new URL("https://www.latch-work.com"),
   title: {
     default: "Latchwork Consulting | Business Operations & Back-Office Consulting",
     template: "%s | Latchwork Consulting",
