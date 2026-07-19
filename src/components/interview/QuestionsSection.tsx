@@ -6,19 +6,17 @@ import Card from "@/components/ui/Card";
 import TextArea from "@/components/ui/TextArea";
 import FormField from "@/components/ui/FormField";
 import Button from "@/components/ui/Button";
-import {
-  INTERVIEW_QUESTIONS,
-  type InterviewFormValues,
-} from "@/lib/validation/interview-schema";
-
-const TOTAL = INTERVIEW_QUESTIONS.length;
+import type { InterviewFormValues } from "@/lib/validation/interview-schema";
+import type { InterviewQuestion } from "@/lib/interviewQuestions";
 
 type QuestionsSectionProps = {
+  questions: InterviewQuestion[];
   currentIndex: number;
   onIndexChange: (index: number) => void;
 };
 
 export default function QuestionsSection({
+  questions,
   currentIndex,
   onIndexChange,
 }: QuestionsSectionProps) {
@@ -29,8 +27,9 @@ export default function QuestionsSection({
     formState: { errors },
   } = useFormContext<InterviewFormValues>();
 
-  const question = INTERVIEW_QUESTIONS[currentIndex];
-  const fieldName = question.id as keyof InterviewFormValues;
+  const TOTAL = questions.length;
+  const question = questions[currentIndex];
+  const fieldName = question.id;
   const answer = watch(fieldName) as string | undefined;
   const charCount = answer?.length ?? 0;
   const isFirst = currentIndex === 0;

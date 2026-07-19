@@ -297,6 +297,7 @@ export const values = [
 
 export const openRoles = [
   {
+    slug: "data-entry-associate",
     title: "Data Entry Associate",
     location: "Remote (US)",
     type: "Part Time",
@@ -304,6 +305,7 @@ export const openRoles = [
       "Keep client records accurate and current — migrating spreadsheets, reconciling vendor lists, and cleaning up databases as part of our operational audits. High attention to detail required; no prior consulting experience needed.",
   },
   {
+    slug: "customer-service-representative",
     title: "Customer Service Representative",
     location: "Remote (US)",
     type: "Part Time",
@@ -311,6 +313,7 @@ export const openRoles = [
       "Be the first voice clients hear when they call or email Latchwork. Manage scheduling, answer routine questions, and route issues to the right consultant. Great communication skills and patience required.",
   },
   {
+    slug: "administrative-assistant",
     title: "Administrative Assistant",
     location: "Remote (US)",
     type: "Part Time",
@@ -318,6 +321,7 @@ export const openRoles = [
       "Support the Latchwork team with calendar management, travel coordination, document preparation, and general office operations. Ideal for someone organized who wants to learn the consulting business from the inside.",
   },
   {
+    slug: "senior-operations-consultant",
     title: "Senior Operations Consultant",
     location: "Chicago, IL / Hybrid",
     type: "Full-time",
@@ -325,6 +329,7 @@ export const openRoles = [
       "Lead operational audits and implementation engagements for small business clients across the Midwest. 5+ years in ops, consulting, or fractional COO work.",
   },
   {
+    slug: "bookkeeping-close-specialist",
     title: "Bookkeeping & Close Specialist",
     location: "Remote (US)",
     type: "Full-time",
@@ -332,6 +337,7 @@ export const openRoles = [
       "Own the financial operations workstream for a portfolio of clients — chart of accounts cleanup, monthly close, AP/AR systems. CPA or bookkeeping background required.",
   },
   {
+    slug: "automation-engineer",
     title: "Automation Engineer",
     location: "Remote (US)",
     type: "Full-time",
@@ -339,6 +345,7 @@ export const openRoles = [
       "Design and build no-code/low-code automations connecting client tool stacks. Comfortable with Zapier, Make, and light scripting.",
   },
   {
+    slug: "client-operations-associate",
     title: "Client Operations Associate",
     location: "Chicago, IL",
     type: "Full-time",

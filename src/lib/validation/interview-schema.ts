@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { InterviewQuestion } from "@/lib/interviewQuestions";
 
 export const US_STATES = [
   { value: "AL", label: "Alabama" },
@@ -79,103 +80,31 @@ export const applicantInfoSchema = z.object({
   }),
 });
 
-export const INTERVIEW_QUESTIONS = [
-  {
-    id: "q1",
-    label:
-      "Why are you interested in this remote administrative assistant position, and what makes you a strong fit for it?",
-  },
-  {
-    id: "q2",
-    label:
-      "Describe your experience with calendar management, scheduling, and coordinating meetings across multiple time zones.",
-  },
-  {
-    id: "q3",
-    label:
-      "What tools or software have you used for email management, and how do you prioritize a busy inbox?",
-  },
-  {
-    id: "q4",
-    label:
-      "Tell us about a time you had to manage multiple competing deadlines. How did you prioritize your work?",
-  },
-  {
-    id: "q5",
-    label:
-      "How do you ensure accuracy and attention to detail when handling data entry, reports, or documentation?",
-  },
-  {
-    id: "q6",
-    label:
-      "Describe your experience with virtual meeting platforms (e.g., Zoom, Google Meet, Microsoft Teams) and any administrative support you've provided during meetings.",
-  },
-  {
-    id: "q7",
-    label:
-      "What is your experience with expense reporting, invoicing, or basic bookkeeping tasks?",
-  },
-  {
-    id: "q8",
-    label:
-      "How do you handle confidential or sensitive information in your day-to-day work?",
-  },
-  {
-    id: "q9",
-    label:
-      "Describe a situation where you had to communicate with a difficult client, vendor, or coworker. How did you handle it?",
-  },
-  {
-    id: "q10",
-    label:
-      "What does your ideal remote work setup look like, and how do you stay productive and organized while working independently?",
-  },
-  {
-    id: "q11",
-    label:
-      "How do you typically communicate progress or blockers to a manager when working remotely?",
-  },
-  {
-    id: "q12",
-    label:
-      "What experience do you have with project management or task-tracking tools (e.g., Asana, Trello, Monday.com)?",
-  },
-  {
-    id: "q13",
-    label:
-      "Describe a time you identified a way to improve a process or workflow. What did you do and what was the result?",
-  },
-  {
-    id: "q14",
-    label:
-      "What hours and days are you available to work, and do you anticipate any scheduling constraints going forward?",
-  },
-  {
-    id: "q15",
-    label:
-      "Is there anything else you'd like us to know about your background or qualifications? (Optional)",
-  },
-] as const;
-
 const QUESTION_MIN_LENGTH = 20;
 
-type QuestionId = (typeof INTERVIEW_QUESTIONS)[number]["id"];
+export const positionSchema = z.object({
+  position: z.string().trim().min(1, "Please select a position."),
+});
 
-const questionsShape = INTERVIEW_QUESTIONS.reduce((shape, question, index) => {
-  const isLast = index === INTERVIEW_QUESTIONS.length - 1;
-  shape[question.id as QuestionId] = isLast
-    ? z.string().trim()
-    : z
-        .string()
-        .trim()
-        .min(
-          QUESTION_MIN_LENGTH,
-          `Please provide a more detailed answer (at least ${QUESTION_MIN_LENGTH} characters).`
-        );
-  return shape;
-}, {} as Record<QuestionId, z.ZodString>);
+// Builds the question-answer shape for a given position's question set. The
+// last question in any set is treated as the optional "anything else" wrap-up.
+export function buildQuestionsSchema(questions: InterviewQuestion[]) {
+  const shape = questions.reduce((acc, question, index) => {
+    const isLast = index === questions.length - 1;
+    acc[question.id] = isLast
+      ? z.string().trim()
+      : z
+          .string()
+          .trim()
+          .min(
+            QUESTION_MIN_LENGTH,
+            `Please provide a more detailed answer (at least ${QUESTION_MIN_LENGTH} characters).`
+          );
+    return acc;
+  }, {} as Record<string, z.ZodString>);
 
-export const questionsSchema = z.object(questionsShape);
+  return z.object(shape);
+}
 
 export const certificationSchema = z.object({
   certified: z.boolean().refine((value) => value === true, {
@@ -183,8 +112,25 @@ export const certificationSchema = z.object({
   }),
 });
 
-export const interviewSchema = applicantInfoSchema
-  .merge(questionsSchema)
-  .merge(certificationSchema);
+export type ApplicantInfoValues = z.infer<typeof applicantInfoSchema>;
+export type CertificationValues = z.infer<typeof certificationSchema>;
 
-export type InterviewFormValues = z.infer<typeof interviewSchema>;
+// The question-answer fields vary per position (different ids/counts), so
+// they're typed loosely here rather than threading a schema-specific generic
+// through every consuming component.
+export type InterviewFormValues = ApplicantInfoValues &
+  CertificationValues & {
+    position: string;
+    [key: string]: unknown;
+  };
+
+export function buildInterviewSchema(questions: InterviewQuestion[]) {
+  const schema = applicantInfoSchema
+    .merge(positionSchema)
+    .merge(buildQuestionsSchema(questions))
+    .merge(certificationSchema);
+
+  // zod infers a loose Record<string, string> for the dynamic question shape,
+  // which collapses the merged type — cast back to our hand-declared shape.
+  return schema as unknown as z.ZodType<InterviewFormValues, InterviewFormValues>;
+}

@@ -1,10 +1,8 @@
 "use server";
 
-import {
-  INTERVIEW_QUESTIONS,
-  US_STATES,
-  type InterviewFormValues,
-} from "@/lib/validation/interview-schema";
+import { US_STATES, type InterviewFormValues } from "@/lib/validation/interview-schema";
+import { INTERVIEW_QUESTION_BANK } from "@/lib/interviewQuestions";
+import { openRoles } from "@/lib/data";
 
 const STATICFORMS_ENDPOINT = "https://api.staticforms.dev/submit";
 
@@ -117,6 +115,10 @@ export async function submitInterview(
   const stateLabel =
     US_STATES.find((state) => state.value === data.state)?.label ?? data.state;
 
+  const role = openRoles.find((r) => r.slug === data.position);
+  const positionLabel = role?.title ?? data.position;
+  const questions = INTERVIEW_QUESTION_BANK[data.position] ?? [];
+
   const header = [
     `Name: ${data.fullName}`,
     `Email: ${data.email}`,
@@ -124,20 +126,23 @@ export async function submitInterview(
     `Location: ${data.city}, ${stateLabel}`,
     data.resumeUrl && `Resume: ${data.resumeUrl}`,
     `Authorized to work in the US: ${data.workAuthorized === "yes" ? "Yes" : "No"}`,
+    `Position: ${positionLabel}`,
   ]
     .filter(Boolean)
     .join("\n");
 
-  const answers = INTERVIEW_QUESTIONS.map((question, index) => {
-    const answer = data[question.id as keyof InterviewFormValues] as string;
-    return `${index + 1}. ${question.label}\n${answer || "(no answer)"}`;
-  }).join("\n\n");
+  const answers = questions
+    .map((question, index) => {
+      const answer = data[question.id] as string | undefined;
+      return `${index + 1}. ${question.label}\n${answer || "(no answer)"}`;
+    })
+    .join("\n\n");
 
   return submitToStaticForms(
     {
       name: data.fullName,
       email: data.email,
-      subject: `New interview submission: ${data.fullName}`,
+      subject: `New interview submission: ${data.fullName} (${positionLabel})`,
       message: [header, answers].join("\n\n"),
       replyTo: data.email,
     },

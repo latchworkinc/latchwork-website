@@ -10,37 +10,53 @@ import CertificationSection from "./CertificationSection";
 import SuccessScreen from "./SuccessScreen";
 import Button from "@/components/ui/Button";
 import {
-  INTERVIEW_QUESTIONS,
-  interviewSchema,
+  buildInterviewSchema,
   type InterviewFormValues,
 } from "@/lib/validation/interview-schema";
+import { INTERVIEW_QUESTION_BANK } from "@/lib/interviewQuestions";
 
-const DRAFT_KEY = "latchwork-interview-draft";
+const DRAFT_KEY_PREFIX = "latchwork-interview-draft-";
 const AUTOSAVE_DELAY = 600;
 
-type QuestionId = (typeof INTERVIEW_QUESTIONS)[number]["id"];
-
-const questionDefaults = Object.fromEntries(
-  INTERVIEW_QUESTIONS.map((question) => [question.id, ""])
-) as { [K in QuestionId]: string };
-
-const defaultValues: InterviewFormValues = {
+const APPLICANT_DEFAULTS = {
   fullName: "",
   email: "",
   phone: "",
   city: "",
-  state: "" as InterviewFormValues["state"],
+  state: "",
   resumeUrl: "",
-  workAuthorized: undefined as unknown as InterviewFormValues["workAuthorized"],
+  workAuthorized: undefined,
   certified: false,
-  ...questionDefaults,
 };
+
+function hasAnyContent(values: Record<string, unknown>) {
+  return Object.entries(values).some(([key, value]) => {
+    if (key === "position") return false;
+    if (typeof value === "string") return value.trim() !== "";
+    if (typeof value === "boolean") return value;
+    return Boolean(value);
+  });
+}
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-export default function InterviewForm() {
+type InterviewFormProps = {
+  position: { slug: string; title: string };
+  onDirtyChange?: (hasContent: boolean) => void;
+};
+
+export default function InterviewForm({ position, onDirtyChange }: InterviewFormProps) {
+  const questions = INTERVIEW_QUESTION_BANK[position.slug] ?? [];
+  const draftKey = `${DRAFT_KEY_PREFIX}${position.slug}`;
+
+  const defaultValues = {
+    ...APPLICANT_DEFAULTS,
+    position: position.slug,
+    ...Object.fromEntries(questions.map((question) => [question.id, ""])),
+  } as unknown as InterviewFormValues;
+
   const methods = useForm<InterviewFormValues>({
-    resolver: zodResolver(interviewSchema),
+    resolver: zodResolver(buildInterviewSchema(questions)),
     defaultValues,
   });
 
@@ -52,33 +68,38 @@ export default function InterviewForm() {
   const hydrated = useRef(false);
   const saveTimeout = useRef<ReturnType<typeof setTimeout>>();
 
-  // Restore an in-progress draft from localStorage, if one exists.
+  // Restore an in-progress draft from localStorage, if one exists for this position.
   useEffect(() => {
-    const saved = window.localStorage.getItem(DRAFT_KEY);
+    const saved = window.localStorage.getItem(draftKey);
     if (saved) {
       try {
-        reset(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        reset(parsed);
+        onDirtyChange?.(hasAnyContent(parsed));
       } catch {
-        window.localStorage.removeItem(DRAFT_KEY);
+        window.localStorage.removeItem(draftKey);
       }
     }
     hydrated.current = true;
-  }, [reset]);
+    // Only run once per mount — this form remounts (via key) on position change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Debounced autosave of the full form state on every change.
   useEffect(() => {
     const subscription = watch((values) => {
       if (!hydrated.current) return;
+      onDirtyChange?.(hasAnyContent(values as Record<string, unknown>));
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
       saveTimeout.current = setTimeout(() => {
-        window.localStorage.setItem(DRAFT_KEY, JSON.stringify(values));
+        window.localStorage.setItem(draftKey, JSON.stringify(values));
       }, AUTOSAVE_DELAY);
     });
     return () => {
       subscription.unsubscribe();
       if (saveTimeout.current) clearTimeout(saveTimeout.current);
     };
-  }, [watch]);
+  }, [watch, draftKey, onDirtyChange]);
 
   async function onValid(values: InterviewFormValues) {
     if (status === "submitting") return;
@@ -101,7 +122,8 @@ export default function InterviewForm() {
         return;
       }
 
-      window.localStorage.removeItem(DRAFT_KEY);
+      window.localStorage.removeItem(draftKey);
+      onDirtyChange?.(false);
       setStatus("success");
     } catch {
       setErrorMessage("Network error — please check your connection and try again.");
@@ -110,7 +132,7 @@ export default function InterviewForm() {
   }
 
   function onInvalid(formErrors: FieldErrors<InterviewFormValues>) {
-    const firstInvalidQuestion = INTERVIEW_QUESTIONS.findIndex(
+    const firstInvalidQuestion = questions.findIndex(
       (question) => formErrors[question.id as keyof InterviewFormValues]
     );
     if (firstInvalidQuestion !== -1) {
@@ -138,6 +160,7 @@ export default function InterviewForm() {
             >
               <ApplicantInfoSection />
               <QuestionsSection
+                questions={questions}
                 currentIndex={questionIndex}
                 onIndexChange={setQuestionIndex}
               />

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { interviewSchema } from "@/lib/validation/interview-schema";
+import { buildInterviewSchema } from "@/lib/validation/interview-schema";
+import { INTERVIEW_QUESTION_BANK } from "@/lib/interviewQuestions";
 import { submitInterview } from "@/app/actions/staticforms";
 
 export async function POST(request: Request) {
@@ -12,7 +13,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = interviewSchema.safeParse(body);
+  const questions = INTERVIEW_QUESTION_BANK[body?.position] ?? [];
+
+  if (questions.length === 0) {
+    return NextResponse.json(
+      { success: false, error: "Please select a valid position." },
+      { status: 422 }
+    );
+  }
+
+  const result = buildInterviewSchema(questions).safeParse(body);
 
   if (!result.success) {
     return NextResponse.json(
