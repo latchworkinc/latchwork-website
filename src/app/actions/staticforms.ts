@@ -177,7 +177,7 @@ export async function submitInterview(
     },
     [
       process.env.STATICFORMS_INTERVIEW_ACCESS_KEY,
-      process.env.STATICFORMS_INTERVIEW_ACCESS_KEY_FALLBACK,
+      process.env.STATICFORMS_ACCESS_KEY_FALLBACK,
     ]
   );
 }
