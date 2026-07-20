@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Container from "@/components/Container";
 import InterviewExperience from "@/components/interview/InterviewExperience";
 import { pageMetadata } from "@/lib/seo";
@@ -12,7 +13,9 @@ export default function InterviewPage() {
     <div className="bg-interview-bg">
       <Container>
         <section className="mx-auto max-w-3xl py-20 sm:py-28">
-          <InterviewExperience />
+          <Suspense fallback={null}>
+            <InterviewExperience />
+          </Suspense>
         </section>
       </Container>
     </div>

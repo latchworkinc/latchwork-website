@@ -1,20 +1,45 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { openRoles } from "@/lib/data";
 import { submitApplication } from "@/app/actions/staticforms";
+import { APPLY_HANDOFF_KEY, type ApplyHandoffPayload } from "@/lib/applyHandoff";
+import { GENERAL_APPLICATION_KEY, hasAlreadyApplied, markApplied } from "@/lib/appliedGuard";
+
+const REDIRECT_DELAY = 1500;
 
 type Status = "idle" | "submitting" | "success" | "error";
 
+function positionKeyForRole(role: string): string {
+  if (role === "General application") return GENERAL_APPLICATION_KEY;
+  return openRoles.find((r) => r.title === role)?.slug ?? role;
+}
+
 export default function ApplyForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const roleParam = searchParams.get("role");
 
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState("");
+  const [redirectTarget, setRedirectTarget] = useState("/interview");
+  const [selectedRole, setSelectedRole] = useState(roleParam ?? "");
+  const [alreadyApplied, setAlreadyApplied] = useState(false);
+
+  useEffect(() => {
+    if (status !== "success") return;
+    const timeout = setTimeout(() => router.push(redirectTarget), REDIRECT_DELAY);
+    return () => clearTimeout(timeout);
+  }, [status, redirectTarget, router]);
+
+  // Reads localStorage after mount (not during render) to avoid a
+  // server/client hydration mismatch on the initial paint.
+  useEffect(() => {
+    setAlreadyApplied(selectedRole ? hasAlreadyApplied(positionKeyForRole(selectedRole)) : false);
+  }, [selectedRole]);
 
   function validate(formData: FormData) {
     const next: Record<string, string> = {};
@@ -30,6 +55,8 @@ export default function ApplyForm() {
     if (phone && !/^[+]?[\d\s().-]{7,20}$/.test(phone))
       next.phone = "Please enter a valid phone number.";
     if (!role) next.role = "Please select a role.";
+    else if (hasAlreadyApplied(positionKeyForRole(role)))
+      next.role = "You've already applied for this position from this browser.";
     if (pitch.length < 10)
       next.pitch = "Tell us a little more (10+ characters).";
 
@@ -47,6 +74,20 @@ export default function ApplyForm() {
     const result = await submitApplication(formData);
 
     if (result.success) {
+      const role = String(formData.get("role") || "").trim();
+      const matchedSlug = openRoles.find((r) => r.title === role)?.slug;
+
+      markApplied(positionKeyForRole(role));
+
+      const payload: ApplyHandoffPayload = {
+        fullName: String(formData.get("name") || "").trim() || undefined,
+        email: String(formData.get("email") || "").trim() || undefined,
+        phone: String(formData.get("phone") || "").trim() || undefined,
+        resumeUrl: String(formData.get("resume") || "").trim() || undefined,
+      };
+      window.sessionStorage.setItem(APPLY_HANDOFF_KEY, JSON.stringify(payload));
+
+      setRedirectTarget(matchedSlug ? `/interview?position=${matchedSlug}` : "/interview");
       setStatus("success");
     } else {
       setErrorMessage(result.error);
@@ -70,6 +111,10 @@ export default function ApplyForm() {
         <p className="mt-2 max-w-sm text-sm text-ink-300">
           Thanks for applying — our team reviews every application and will
           follow up within five business days.
+        </p>
+        <p className="mt-4 max-w-sm text-sm text-emerald-300">
+          Taking you to the online interview now — please complete it to move
+          your application forward.
         </p>
       </motion.div>
     );
@@ -120,7 +165,8 @@ export default function ApplyForm() {
         <select
           id="role"
           name="role"
-          defaultValue={roleParam ?? ""}
+          value={selectedRole}
+          onChange={(e) => setSelectedRole(e.target.value)}
           className="w-full border-b border-charcoal-500 bg-transparent px-1 py-3 text-sm text-ink-100 outline-none transition-colors focus:border-emerald-500"
         >
           <option value="" disabled>
@@ -134,8 +180,9 @@ export default function ApplyForm() {
           <option value="General application">General application</option>
         </select>
         <AnimatePresence>
-          {errors.role && (
+          {errors.role ? (
             <motion.p
+              key="error"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -143,6 +190,30 @@ export default function ApplyForm() {
             >
               {errors.role}
             </motion.p>
+          ) : (
+            alreadyApplied && (
+              <motion.p
+                key="already-applied"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 text-xs text-amber-400"
+              >
+                You&apos;ve already applied for this position from this browser. If
+                you believe this is a mistake, please{" "}
+                <a href="/contact" className="underline hover:text-amber-300">
+                  contact us
+                </a>{" "}
+                at{" "}
+                <a
+                  href="mailto:hr@latch-work.com"
+                  className="underline hover:text-amber-300"
+                >
+                  hr@latch-work.com
+                </a>
+                .
+              </motion.p>
+            )
           )}
         </AnimatePresence>
       </div>
@@ -202,7 +273,7 @@ export default function ApplyForm() {
 
       <button
         type="submit"
-        disabled={status === "submitting"}
+        disabled={status === "submitting" || alreadyApplied}
         className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-sm font-medium text-charcoal-950 transition-all duration-300 hover:bg-emerald-400 hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {status === "submitting" ? (

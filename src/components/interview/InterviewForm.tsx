@@ -14,6 +14,7 @@ import {
   type InterviewFormValues,
 } from "@/lib/validation/interview-schema";
 import { INTERVIEW_QUESTION_BANK } from "@/lib/interviewQuestions";
+import type { ApplyHandoffPayload } from "@/lib/applyHandoff";
 
 const DRAFT_KEY_PREFIX = "latchwork-interview-draft-";
 const AUTOSAVE_DELAY = 600;
@@ -42,15 +43,17 @@ type Status = "idle" | "submitting" | "success" | "error";
 
 type InterviewFormProps = {
   position: { slug: string; title: string };
+  prefill?: ApplyHandoffPayload;
   onDirtyChange?: (hasContent: boolean) => void;
 };
 
-export default function InterviewForm({ position, onDirtyChange }: InterviewFormProps) {
+export default function InterviewForm({ position, prefill, onDirtyChange }: InterviewFormProps) {
   const questions = INTERVIEW_QUESTION_BANK[position.slug] ?? [];
   const draftKey = `${DRAFT_KEY_PREFIX}${position.slug}`;
 
   const defaultValues = {
     ...APPLICANT_DEFAULTS,
+    ...prefill,
     position: position.slug,
     ...Object.fromEntries(questions.map((question) => [question.id, ""])),
   } as unknown as InterviewFormValues;
