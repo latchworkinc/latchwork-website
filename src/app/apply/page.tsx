@@ -2,8 +2,10 @@ import { Suspense } from "react";
 import Container from "@/components/Container";
 import Reveal from "@/components/Reveal";
 import ApplyForm from "@/components/ApplyForm";
+import MaintenanceNotice from "@/components/MaintenanceNotice";
 import { openRoles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
+import { FORMS_UNDER_MAINTENANCE } from "@/lib/maintenance";
 
 export const metadata = pageMetadata(
   "Apply",
@@ -57,11 +59,15 @@ export default function ApplyPage() {
 
           <div className="lg:col-span-7">
             <Reveal delay={0.1}>
-              <div className="rounded-3xl border border-charcoal-600/60 bg-charcoal-900/50 p-8 md:p-10">
-                <Suspense fallback={null}>
-                  <ApplyForm />
-                </Suspense>
-              </div>
+              {FORMS_UNDER_MAINTENANCE ? (
+                <MaintenanceNotice />
+              ) : (
+                <div className="rounded-3xl border border-charcoal-600/60 bg-charcoal-900/50 p-8 md:p-10">
+                  <Suspense fallback={null}>
+                    <ApplyForm />
+                  </Suspense>
+                </div>
+              )}
             </Reveal>
           </div>
         </div>

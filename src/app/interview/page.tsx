@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import Container from "@/components/Container";
 import InterviewExperience from "@/components/interview/InterviewExperience";
+import MaintenanceNotice from "@/components/MaintenanceNotice";
 import { pageMetadata } from "@/lib/seo";
+import { FORMS_UNDER_MAINTENANCE } from "@/lib/maintenance";
 
 export const metadata = pageMetadata(
   "Interview",
@@ -13,9 +15,13 @@ export default function InterviewPage() {
     <div className="bg-interview-bg">
       <Container>
         <section className="mx-auto max-w-3xl py-20 sm:py-28">
-          <Suspense fallback={null}>
-            <InterviewExperience />
-          </Suspense>
+          {FORMS_UNDER_MAINTENANCE ? (
+            <MaintenanceNotice />
+          ) : (
+            <Suspense fallback={null}>
+              <InterviewExperience />
+            </Suspense>
+          )}
         </section>
       </Container>
     </div>
