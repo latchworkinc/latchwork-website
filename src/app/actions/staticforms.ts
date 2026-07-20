@@ -8,7 +8,7 @@ const STATICFORMS_ENDPOINT = "https://api.staticforms.dev/submit";
 
 type SubmitResult = { success: true } | { success: false; error: string };
 
-async function submitToStaticForms(
+async function submitWithKey(
   payload: {
     name: string;
     email: string;
@@ -16,12 +16,8 @@ async function submitToStaticForms(
     message: string;
     replyTo?: string;
   },
-  apiKey = process.env.STATICFORMS_ACCESS_KEY
+  apiKey: string
 ): Promise<SubmitResult> {
-  if (!apiKey) {
-    return { success: false, error: "Form submission isn't configured yet." };
-  }
-
   try {
     const res = await fetch(STATICFORMS_ENDPOINT, {
       method: "POST",
@@ -49,6 +45,33 @@ async function submitToStaticForms(
   }
 }
 
+// Keys are tried in order — once a key's staticforms.dev submission quota
+// (500/mo on the free plan) is exhausted, its requests start failing, so we
+// fall through to the next key rather than dropping submissions.
+async function submitToStaticForms(
+  payload: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    replyTo?: string;
+  },
+  apiKeys: Array<string | undefined> = [process.env.STATICFORMS_ACCESS_KEY]
+): Promise<SubmitResult> {
+  const keys = apiKeys.filter((key): key is string => Boolean(key));
+
+  if (keys.length === 0) {
+    return { success: false, error: "Form submission isn't configured yet." };
+  }
+
+  let lastResult: SubmitResult = { success: false, error: "" };
+  for (const key of keys) {
+    lastResult = await submitWithKey(payload, key);
+    if (lastResult.success) return lastResult;
+  }
+  return lastResult;
+}
+
 export async function submitContactForm(
   formData: FormData
 ): Promise<SubmitResult> {
@@ -69,13 +92,16 @@ export async function submitContactForm(
     message,
   ].filter((line): line is string => Boolean(line) || line === "");
 
-  return submitToStaticForms({
-    name,
-    email,
-    subject: `New contact form submission from ${name || "website visitor"}`,
-    message: lines.join("\n"),
-    replyTo: email,
-  });
+  return submitToStaticForms(
+    {
+      name,
+      email,
+      subject: `New contact form submission from ${name || "website visitor"}`,
+      message: lines.join("\n"),
+      replyTo: email,
+    },
+    [process.env.STATICFORMS_ACCESS_KEY, process.env.STATICFORMS_ACCESS_KEY_FALLBACK]
+  );
 }
 
 export async function submitApplication(
@@ -100,13 +126,16 @@ export async function submitApplication(
     pitch,
   ].filter((line): line is string => Boolean(line) || line === "");
 
-  return submitToStaticForms({
-    name,
-    email,
-    subject: `New job application: ${role || "General application"}`,
-    message: lines.join("\n"),
-    replyTo: email,
-  });
+  return submitToStaticForms(
+    {
+      name,
+      email,
+      subject: `New job application: ${role || "General application"}`,
+      message: lines.join("\n"),
+      replyTo: email,
+    },
+    [process.env.STATICFORMS_ACCESS_KEY, process.env.STATICFORMS_ACCESS_KEY_FALLBACK]
+  );
 }
 
 export async function submitInterview(
@@ -146,6 +175,9 @@ export async function submitInterview(
       message: [header, answers].join("\n\n"),
       replyTo: data.email,
     },
-    process.env.STATICFORMS_INTERVIEW_ACCESS_KEY
+    [
+      process.env.STATICFORMS_INTERVIEW_ACCESS_KEY,
+      process.env.STATICFORMS_INTERVIEW_ACCESS_KEY_FALLBACK,
+    ]
   );
 }
