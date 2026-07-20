@@ -119,7 +119,8 @@ export default function InterviewForm({ position, prefill, onDirtyChange }: Inte
 
       if (!res.ok || !data?.success) {
         setErrorMessage(
-          data?.error || "Something went wrong submitting your interview. Please try again."
+          data?.error ||
+            "Something went wrong submitting your interview. Please try again, or email hello@latch-work.com if it keeps happening."
         );
         setStatus("error");
         return;
@@ -129,7 +130,9 @@ export default function InterviewForm({ position, prefill, onDirtyChange }: Inte
       onDirtyChange?.(false);
       setStatus("success");
     } catch {
-      setErrorMessage("Network error — please check your connection and try again.");
+      setErrorMessage(
+        "Network error — please check your connection and try again, or email hello@latch-work.com if it keeps happening."
+      );
       setStatus("error");
     }
   }
@@ -196,6 +199,18 @@ export default function InterviewForm({ position, prefill, onDirtyChange }: Inte
               >
                 {status === "submitting" ? "Submitting..." : "Submit Interview"}
               </Button>
+
+              <p className="text-xs text-white/40">
+                Didn&apos;t get a confirmation, or think this didn&apos;t go through?
+                Email{" "}
+                <a
+                  href="mailto:hello@latch-work.com"
+                  className="underline hover:text-white/60"
+                >
+                  hello@latch-work.com
+                </a>{" "}
+                or try submitting again.
+              </p>
             </form>
           </FormProvider>
         </motion.div>
