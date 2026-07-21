@@ -111,46 +111,6 @@ export async function submitContactForm(
   return result;
 }
 
-export async function submitApplication(
-  formData: FormData
-): Promise<SubmitResult> {
-  const name = String(formData.get("name") || "").trim();
-  const email = String(formData.get("email") || "").trim();
-  const phone = String(formData.get("phone") || "").trim();
-  const role = String(formData.get("role") || "").trim();
-  const link = String(formData.get("link") || "").trim();
-  const resume = String(formData.get("resume") || "").trim();
-  const pitch = String(formData.get("pitch") || "").trim();
-
-  const lines = [
-    `Name: ${name}`,
-    `Email: ${email}`,
-    phone && `Phone: ${phone}`,
-    `Role applying for: ${role}`,
-    link && `LinkedIn / portfolio: ${link}`,
-    resume && `Resume link: ${resume}`,
-    "",
-    pitch,
-  ].filter((line): line is string => Boolean(line) || line === "");
-
-  const result = await submitToStaticForms(
-    {
-      name,
-      email,
-      subject: `New job application: ${role || "General application"}`,
-      message: lines.join("\n"),
-      replyTo: email,
-    },
-    [process.env.STATICFORMS_ACCESS_KEY, process.env.STATICFORMS_ACCESS_KEY_FALLBACK]
-  );
-  if (result.success) recordSubmissionSuccess();
-  else {
-    console.error(`[formSubmissions] Application (${role || "General"}) failed: ${result.error}`);
-    recordSubmissionFailure();
-  }
-  return result;
-}
-
 export async function submitInterview(
   data: InterviewFormValues
 ): Promise<SubmitResult> {

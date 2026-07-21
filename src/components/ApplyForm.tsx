@@ -4,13 +4,15 @@ import { FormEvent, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { openRoles } from "@/lib/data";
-import { submitApplication } from "@/app/actions/staticforms";
 import { APPLY_HANDOFF_KEY, type ApplyHandoffPayload } from "@/lib/applyHandoff";
 import { GENERAL_APPLICATION_KEY, hasAlreadyApplied, markApplied } from "@/lib/appliedGuard";
 
 const REDIRECT_DELAY = 1500;
 
-type Status = "idle" | "submitting" | "success" | "error";
+// The apply form itself is never submitted to us — it only collects enough
+// info to hand off into the interview (see ApplyHandoffPayload below). The
+// interview submission is the one notification we actually send.
+type Status = "idle" | "success";
 
 function positionKeyForRole(role: string): string {
   if (role === "General application") return GENERAL_APPLICATION_KEY;
@@ -24,7 +26,6 @@ export default function ApplyForm() {
 
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [errorMessage, setErrorMessage] = useState("");
   const [redirectTarget, setRedirectTarget] = useState("/interview");
   const [selectedRole, setSelectedRole] = useState(roleParam ?? "");
   const [alreadyApplied, setAlreadyApplied] = useState(false);
@@ -63,36 +64,28 @@ export default function ApplyForm() {
     return next;
   }
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const validation = validate(formData);
     setErrors(validation);
     if (Object.keys(validation).length > 0) return;
 
-    setStatus("submitting");
-    const result = await submitApplication(formData);
+    const role = String(formData.get("role") || "").trim();
+    const matchedSlug = openRoles.find((r) => r.title === role)?.slug;
 
-    if (result.success) {
-      const role = String(formData.get("role") || "").trim();
-      const matchedSlug = openRoles.find((r) => r.title === role)?.slug;
+    markApplied(positionKeyForRole(role));
 
-      markApplied(positionKeyForRole(role));
+    const payload: ApplyHandoffPayload = {
+      fullName: String(formData.get("name") || "").trim() || undefined,
+      email: String(formData.get("email") || "").trim() || undefined,
+      phone: String(formData.get("phone") || "").trim() || undefined,
+      resumeUrl: String(formData.get("resume") || "").trim() || undefined,
+    };
+    window.sessionStorage.setItem(APPLY_HANDOFF_KEY, JSON.stringify(payload));
 
-      const payload: ApplyHandoffPayload = {
-        fullName: String(formData.get("name") || "").trim() || undefined,
-        email: String(formData.get("email") || "").trim() || undefined,
-        phone: String(formData.get("phone") || "").trim() || undefined,
-        resumeUrl: String(formData.get("resume") || "").trim() || undefined,
-      };
-      window.sessionStorage.setItem(APPLY_HANDOFF_KEY, JSON.stringify(payload));
-
-      setRedirectTarget(matchedSlug ? `/interview?position=${matchedSlug}` : "/interview");
-      setStatus("success");
-    } else {
-      setErrorMessage(result.error);
-      setStatus("error");
-    }
+    setRedirectTarget(matchedSlug ? `/interview?position=${matchedSlug}` : "/interview");
+    setStatus("success");
   }
 
   if (status === "success") {
@@ -255,40 +248,15 @@ export default function ApplyForm() {
         </AnimatePresence>
       </div>
 
-      <AnimatePresence>
-        {status === "error" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="flex items-start gap-3 border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-300">
-              <span className="mt-0.5">⚠</span>
-              <span>{errorMessage}</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <button
         type="submit"
-        disabled={status === "submitting" || alreadyApplied}
+        disabled={alreadyApplied}
         className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-6 py-3.5 text-sm font-medium text-charcoal-950 transition-all duration-300 hover:bg-emerald-400 hover:shadow-glow disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        {status === "submitting" ? (
-          <>
-            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-charcoal-950/30 border-t-charcoal-950" />
-            Submitting...
-          </>
-        ) : (
-          <>
-            {status === "error" ? "Try again" : "Submit application"}
-            <span className="transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
-          </>
-        )}
+        Submit application
+        <span className="transition-transform duration-300 group-hover:translate-x-1">
+          →
+        </span>
       </button>
     </form>
   );
