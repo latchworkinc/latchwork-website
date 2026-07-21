@@ -4,6 +4,11 @@ import InterviewExperience from "@/components/interview/InterviewExperience";
 import MaintenanceNotice from "@/components/MaintenanceNotice";
 import { pageMetadata } from "@/lib/seo";
 import { FORMS_UNDER_MAINTENANCE } from "@/lib/maintenance";
+import { isAutoMaintenanceActive } from "@/lib/formHealth";
+
+// Reads live in-memory submission-health state, so this page must not be
+// statically cached at build time.
+export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata(
   "Interview",
@@ -11,11 +16,13 @@ export const metadata = pageMetadata(
 );
 
 export default function InterviewPage() {
+  const underMaintenance = FORMS_UNDER_MAINTENANCE || isAutoMaintenanceActive();
+
   return (
     <div className="bg-interview-bg">
       <Container>
         <section className="mx-auto max-w-3xl py-20 sm:py-28">
-          {FORMS_UNDER_MAINTENANCE ? (
+          {underMaintenance ? (
             <MaintenanceNotice />
           ) : (
             <Suspense fallback={null}>

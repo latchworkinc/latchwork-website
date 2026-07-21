@@ -6,6 +6,11 @@ import MaintenanceNotice from "@/components/MaintenanceNotice";
 import { openRoles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { FORMS_UNDER_MAINTENANCE } from "@/lib/maintenance";
+import { isAutoMaintenanceActive } from "@/lib/formHealth";
+
+// Reads live in-memory submission-health state, so this page must not be
+// statically cached at build time.
+export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata(
   "Apply",
@@ -13,6 +18,8 @@ export const metadata = pageMetadata(
 );
 
 export default function ApplyPage() {
+  const underMaintenance = FORMS_UNDER_MAINTENANCE || isAutoMaintenanceActive();
+
   return (
     <section className="pt-40 pb-28 md:pt-48">
       <Container>
@@ -59,7 +66,7 @@ export default function ApplyPage() {
 
           <div className="lg:col-span-7">
             <Reveal delay={0.1}>
-              {FORMS_UNDER_MAINTENANCE ? (
+              {underMaintenance ? (
                 <MaintenanceNotice />
               ) : (
                 <div className="rounded-3xl border border-charcoal-600/60 bg-charcoal-900/50 p-8 md:p-10">

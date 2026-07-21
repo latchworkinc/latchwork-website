@@ -28,6 +28,10 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# google service account credentials — never commit, use env vars instead
+*.serviceaccount.json
+google-service-account*.json
+
 # vercel
 .vercel
 

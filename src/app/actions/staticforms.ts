@@ -3,6 +3,7 @@
 import { US_STATES, type InterviewFormValues } from "@/lib/validation/interview-schema";
 import { INTERVIEW_QUESTION_BANK } from "@/lib/interviewQuestions";
 import { openRoles } from "@/lib/data";
+import { recordSubmissionFailure, recordSubmissionSuccess } from "@/lib/formHealth";
 
 const STATICFORMS_ENDPOINT = "https://api.staticforms.dev/submit";
 
@@ -92,7 +93,7 @@ export async function submitContactForm(
     message,
   ].filter((line): line is string => Boolean(line) || line === "");
 
-  return submitToStaticForms(
+  const result = await submitToStaticForms(
     {
       name,
       email,
@@ -102,6 +103,9 @@ export async function submitContactForm(
     },
     [process.env.STATICFORMS_ACCESS_KEY, process.env.STATICFORMS_ACCESS_KEY_FALLBACK]
   );
+  if (result.success) recordSubmissionSuccess();
+  else recordSubmissionFailure();
+  return result;
 }
 
 export async function submitApplication(
@@ -126,7 +130,7 @@ export async function submitApplication(
     pitch,
   ].filter((line): line is string => Boolean(line) || line === "");
 
-  return submitToStaticForms(
+  const result = await submitToStaticForms(
     {
       name,
       email,
@@ -136,6 +140,9 @@ export async function submitApplication(
     },
     [process.env.STATICFORMS_ACCESS_KEY, process.env.STATICFORMS_ACCESS_KEY_FALLBACK]
   );
+  if (result.success) recordSubmissionSuccess();
+  else recordSubmissionFailure();
+  return result;
 }
 
 export async function submitInterview(
@@ -167,7 +174,7 @@ export async function submitInterview(
     })
     .join("\n\n");
 
-  return submitToStaticForms(
+  const result = await submitToStaticForms(
     {
       name: data.fullName,
       email: data.email,
@@ -180,4 +187,7 @@ export async function submitInterview(
       process.env.STATICFORMS_ACCESS_KEY_FALLBACK,
     ]
   );
+  if (result.success) recordSubmissionSuccess();
+  else recordSubmissionFailure();
+  return result;
 }
