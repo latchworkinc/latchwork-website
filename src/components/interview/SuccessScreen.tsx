@@ -31,6 +31,16 @@ export default function SuccessScreen() {
           qualifications match our current hiring needs, we will contact you regarding the
           next stage of the hiring process.
         </p>
+        <p className="mt-4 max-w-md text-sm leading-relaxed text-white/60">
+          Please save{" "}
+          <a
+            href="mailto:hiring@latch-work.com"
+            className="font-medium text-interview-accent-light underline"
+          >
+            hiring@latch-work.com
+          </a>{" "}
+          as a contact so you don&apos;t miss any follow-up emails from us.
+        </p>
 
         <Link
           href="/careers"
