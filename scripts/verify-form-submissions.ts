@@ -1,4 +1,6 @@
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import { appendToSheet } from "../src/lib/googleSheets";
 import { sendNotificationEmail } from "../src/lib/resend";
 

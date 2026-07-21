@@ -1,7 +1,5 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 type EmailResult = { ok: true } | { ok: false; error: string };
 
 export async function sendNotificationEmail(params: {
@@ -10,6 +8,9 @@ export async function sendNotificationEmail(params: {
   replyTo?: string;
 }): Promise<EmailResult> {
   try {
+    // Instantiated lazily (not at module load) so this reads RESEND_API_KEY
+    // whenever the env is actually populated, not whatever it was at import time.
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const { error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "Latchwork Consulting <noreply@latch-work.com>",
       to: process.env.RESEND_TO_EMAIL || "hello@latch-work.com",

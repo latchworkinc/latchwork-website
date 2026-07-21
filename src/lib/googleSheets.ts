@@ -1,11 +1,5 @@
 import { JWT } from "google-auth-library";
 
-const auth = new JWT({
-  email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-  key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
-
 export type SheetTab = "Contact" | "Applications" | "Interviews";
 
 type AppendResult = { ok: true } | { ok: false; error: string };
@@ -18,6 +12,13 @@ function sanitizeCell(value: string) {
 
 export async function appendToSheet(tab: SheetTab, row: string[]): Promise<AppendResult> {
   try {
+    // Instantiated lazily (not at module load) so this reads the service
+    // account env vars whenever the env is actually populated.
+    const auth = new JWT({
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
     const { token } = await auth.getAccessToken();
     const sheetId = process.env.GOOGLE_SHEET_ID;
 
