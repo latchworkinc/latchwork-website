@@ -8,6 +8,57 @@ import { sendNotificationEmail } from "@/lib/resend";
 import { appendToSheet } from "@/lib/googleSheets";
 
 type SubmitResult = { success: true } | { success: false; error: string };
+type ChannelResult = { ok: true } | { ok: false; error: string };
+
+// A submission only counts as lost if BOTH channels fail — e.g. if Resend's
+// daily send cap is hit, the Sheets row still captures it, so we don't want
+// to tell the candidate their submission failed (or trip the maintenance
+// circuit breaker) when we actually have a record of it.
+async function deliverSubmission(params: {
+  emailTask: Promise<ChannelResult>;
+  sheetTask: Promise<ChannelResult>;
+  subject: string;
+}): Promise<SubmitResult> {
+  const [emailResult, sheetResult] = await Promise.allSettled([
+    params.emailTask,
+    params.sheetTask,
+  ]);
+
+  const email: ChannelResult =
+    emailResult.status === "fulfilled"
+      ? emailResult.value
+      : { ok: false, error: "Email send threw." };
+  const sheet: ChannelResult =
+    sheetResult.status === "fulfilled"
+      ? sheetResult.value
+      : { ok: false, error: "Sheet append threw." };
+
+  if (!email.ok && !sheet.ok) {
+    console.error(
+      `[formSubmissions] Both channels failed for "${params.subject}": email=${email.error} sheet=${sheet.error}`
+    );
+    recordSubmissionFailure();
+    return { success: false, error: email.error };
+  }
+
+  recordSubmissionSuccess();
+
+  if (!email.ok) {
+    // Sheet succeeded, so the submission is safely recorded — but we can't
+    // email an alert since email itself is what's broken. Logs only.
+    console.error(
+      `[formSubmissions] Email failed but sheet backup succeeded for "${params.subject}": ${email.error}`
+    );
+  } else if (!sheet.ok) {
+    console.error(`[formSubmissions] Sheet backup failed for "${params.subject}": ${sheet.error}`);
+    await sendNotificationEmail({
+      subject: "⚠️ Backup sheet write failed for a recent submission",
+      text: `The email above sent fine, but the Google Sheets backup row failed:\n${sheet.error}\n\nOriginal subject: ${params.subject}`,
+    });
+  }
+
+  return { success: true };
+}
 
 export async function submitContactForm(
   formData: FormData
@@ -31,9 +82,9 @@ export async function submitContactForm(
 
   const subject = `New contact form submission from ${name || "website visitor"}`;
 
-  const [emailResult, sheetResult] = await Promise.allSettled([
-    sendNotificationEmail({ subject, text: lines.join("\n"), replyTo: email }),
-    appendToSheet("Contact", [
+  return deliverSubmission({
+    emailTask: sendNotificationEmail({ subject, text: lines.join("\n"), replyTo: email }),
+    sheetTask: appendToSheet("Contact", [
       new Date().toISOString(),
       name,
       email,
@@ -42,34 +93,8 @@ export async function submitContactForm(
       service,
       message,
     ]),
-  ]);
-
-  const emailOutcome =
-    emailResult.status === "fulfilled"
-      ? emailResult.value
-      : { ok: false as const, error: "Email send threw." };
-
-  if (!emailOutcome.ok) {
-    console.error(`[formSubmissions] Contact form failed: ${emailOutcome.error}`);
-    recordSubmissionFailure();
-    return { success: false, error: emailOutcome.error };
-  }
-  recordSubmissionSuccess();
-
-  const sheetOutcome =
-    sheetResult.status === "fulfilled"
-      ? sheetResult.value
-      : { ok: false as const, error: "Sheet append threw." };
-
-  if (!sheetOutcome.ok) {
-    console.error(`[formSubmissions] Contact sheet backup failed: ${sheetOutcome.error}`);
-    await sendNotificationEmail({
-      subject: "⚠️ Backup sheet write failed for a recent submission",
-      text: `The email above sent fine, but the Google Sheets backup row failed:\n${sheetOutcome.error}\n\nOriginal subject: ${subject}`,
-    });
-  }
-
-  return { success: true };
+    subject,
+  });
 }
 
 export async function submitInterview(
@@ -103,13 +128,13 @@ export async function submitInterview(
 
   const subject = `New interview submission: ${data.fullName} (${positionLabel})`;
 
-  const [emailResult, sheetResult] = await Promise.allSettled([
-    sendNotificationEmail({
+  return deliverSubmission({
+    emailTask: sendNotificationEmail({
       subject,
       text: [header, answers].join("\n\n"),
       replyTo: data.email,
     }),
-    appendToSheet("Interviews", [
+    sheetTask: appendToSheet("Interviews", [
       new Date().toISOString(),
       data.fullName,
       data.email,
@@ -122,32 +147,6 @@ export async function submitInterview(
       positionLabel,
       answers,
     ]),
-  ]);
-
-  const emailOutcome =
-    emailResult.status === "fulfilled"
-      ? emailResult.value
-      : { ok: false as const, error: "Email send threw." };
-
-  if (!emailOutcome.ok) {
-    console.error(`[formSubmissions] Interview (${positionLabel}) failed: ${emailOutcome.error}`);
-    recordSubmissionFailure();
-    return { success: false, error: emailOutcome.error };
-  }
-  recordSubmissionSuccess();
-
-  const sheetOutcome =
-    sheetResult.status === "fulfilled"
-      ? sheetResult.value
-      : { ok: false as const, error: "Sheet append threw." };
-
-  if (!sheetOutcome.ok) {
-    console.error(`[formSubmissions] Interview sheet backup failed: ${sheetOutcome.error}`);
-    await sendNotificationEmail({
-      subject: "⚠️ Backup sheet write failed for a recent submission",
-      text: `The email above sent fine, but the Google Sheets backup row failed:\n${sheetOutcome.error}\n\nOriginal subject: ${subject}`,
-    });
-  }
-
-  return { success: true };
+    subject,
+  });
 }
