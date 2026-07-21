@@ -9,7 +9,7 @@
 // process deserves a clean retry rather than staying stuck down.
 
 const FAILURE_THRESHOLD = 2;
-const WINDOW_MS = 30 * 60 * 1000;
+const WINDOW_MS = 5 * 60 * 1000;
 const COOLDOWN_MS = 4 * 60 * 60 * 1000;
 
 let recentFailures: number[] = [];
@@ -19,8 +19,14 @@ export function recordSubmissionFailure() {
   const now = Date.now();
   recentFailures = recentFailures.filter((t) => now - t < WINDOW_MS);
   recentFailures.push(now);
+  console.error(
+    `[formHealth] submission failure ${recentFailures.length}/${FAILURE_THRESHOLD} in the last ${WINDOW_MS / 60000} min`
+  );
   if (recentFailures.length >= FAILURE_THRESHOLD) {
     trippedUntil = now + COOLDOWN_MS;
+    console.error(
+      `[formHealth] circuit breaker TRIPPED — /apply and /interview will show the maintenance notice until ${new Date(trippedUntil).toISOString()}`
+    );
   }
 }
 
@@ -31,6 +37,7 @@ export function recordSubmissionSuccess() {
 export function isAutoMaintenanceActive(): boolean {
   if (trippedUntil === null) return false;
   if (Date.now() < trippedUntil) return true;
+  console.log("[formHealth] circuit breaker reset — forms back online");
   trippedUntil = null;
   recentFailures = [];
   return false;

@@ -104,7 +104,10 @@ export async function submitContactForm(
     [process.env.STATICFORMS_ACCESS_KEY, process.env.STATICFORMS_ACCESS_KEY_FALLBACK]
   );
   if (result.success) recordSubmissionSuccess();
-  else recordSubmissionFailure();
+  else {
+    console.error(`[formSubmissions] Contact form failed: ${result.error}`);
+    recordSubmissionFailure();
+  }
   return result;
 }
 
@@ -141,7 +144,10 @@ export async function submitApplication(
     [process.env.STATICFORMS_ACCESS_KEY, process.env.STATICFORMS_ACCESS_KEY_FALLBACK]
   );
   if (result.success) recordSubmissionSuccess();
-  else recordSubmissionFailure();
+  else {
+    console.error(`[formSubmissions] Application (${role || "General"}) failed: ${result.error}`);
+    recordSubmissionFailure();
+  }
   return result;
 }
 
@@ -188,6 +194,9 @@ export async function submitInterview(
     ]
   );
   if (result.success) recordSubmissionSuccess();
-  else recordSubmissionFailure();
+  else {
+    console.error(`[formSubmissions] Interview (${positionLabel}) failed: ${result.error}`);
+    recordSubmissionFailure();
+  }
   return result;
 }
