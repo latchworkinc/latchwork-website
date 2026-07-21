@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { submitContactForm } from "@/app/actions/staticforms";
+import { submitContactForm } from "@/app/actions/formSubmissions";
 
 type Status = "idle" | "submitting" | "success" | "error";
 

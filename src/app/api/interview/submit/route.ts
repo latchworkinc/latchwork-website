@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildInterviewSchema } from "@/lib/validation/interview-schema";
 import { INTERVIEW_QUESTION_BANK } from "@/lib/interviewQuestions";
-import { submitInterview } from "@/app/actions/staticforms";
+import { submitInterview } from "@/app/actions/formSubmissions";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
