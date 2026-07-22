@@ -3,10 +3,12 @@ import Container from "@/components/Container";
 import Reveal from "@/components/Reveal";
 import ApplyForm from "@/components/ApplyForm";
 import MaintenanceNotice from "@/components/MaintenanceNotice";
+import NoOpenPositionsNotice from "@/components/NoOpenPositionsNotice";
 import { openRoles } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { FORMS_UNDER_MAINTENANCE } from "@/lib/maintenance";
 import { isAutoMaintenanceActive } from "@/lib/formHealth";
+import { NO_OPEN_POSITIONS } from "@/lib/hiring";
 
 // Reads live in-memory submission-health state, so this page must not be
 // statically cached at build time.
@@ -41,33 +43,37 @@ export default function ApplyPage() {
               </p>
             </Reveal>
 
-            <Reveal delay={0.24}>
-              <div className="mt-10 border-t border-charcoal-700/60 pt-6">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-400">
-                  Currently open
-                </p>
-                <ul className="mt-4 space-y-3">
-                  {openRoles.map((role) => (
-                    <li
-                      key={role.title}
-                      className="flex items-baseline justify-between gap-3 text-sm"
-                    >
-                      <span className="text-ink-200">{role.title}</span>
-                      <span className="leader" />
-                      <span className="shrink-0 font-mono text-xs text-ink-400">
-                        {role.location}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
+            {!NO_OPEN_POSITIONS && (
+              <Reveal delay={0.24}>
+                <div className="mt-10 border-t border-charcoal-700/60 pt-6">
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-400">
+                    Currently open
+                  </p>
+                  <ul className="mt-4 space-y-3">
+                    {openRoles.map((role) => (
+                      <li
+                        key={role.title}
+                        className="flex items-baseline justify-between gap-3 text-sm"
+                      >
+                        <span className="text-ink-200">{role.title}</span>
+                        <span className="leader" />
+                        <span className="shrink-0 font-mono text-xs text-ink-400">
+                          {role.location}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+            )}
           </div>
 
           <div className="lg:col-span-7">
             <Reveal delay={0.1}>
               {underMaintenance ? (
                 <MaintenanceNotice />
+              ) : NO_OPEN_POSITIONS ? (
+                <NoOpenPositionsNotice />
               ) : (
                 <div className="rounded-3xl border border-charcoal-600/60 bg-charcoal-900/50 p-8 md:p-10">
                   <Suspense fallback={null}>
